@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Glastroika")]
+[assembly: AssemblyTitle("Glastroika.API")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Woljix Software")]
-[assembly: AssemblyProduct("Glastroika")]
-[assembly: AssemblyCopyright("Copyright © Woljix Software  2018")]
+[assembly: AssemblyProduct("Glastroika.API")]
+[assembly: AssemblyCopyright("Copyright © Woljix Software 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e4833232-a393-4a0d-9777-cfc867f627d2")]
+[assembly: Guid("868f0dd2-2e8c-4b14-9d76-752e40cf6d64")]
 
 // Version information for an assembly consists of the following four values:
 //

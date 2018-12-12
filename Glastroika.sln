@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glastroika", "Glastroika\Glastroika.csproj", "{E4833232-A393-4A0D-9777-CFC867F627D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glastroika.API", "Glastroika.API\Glastroika.API.csproj", "{868F0DD2-2E8C-4B14-9D76-752E40CF6D64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{E4833232-A393-4A0D-9777-CFC867F627D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4833232-A393-4A0D-9777-CFC867F627D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4833232-A393-4A0D-9777-CFC867F627D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{868F0DD2-2E8C-4B14-9D76-752E40CF6D64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{868F0DD2-2E8C-4B14-9D76-752E40CF6D64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{868F0DD2-2E8C-4B14-9D76-752E40CF6D64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{868F0DD2-2E8C-4B14-9D76-752E40CF6D64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
