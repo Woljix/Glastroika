@@ -9,4 +9,4 @@ But some time later i decided to try again and i wanted to give it a new name; s
 
 When Perestroika gave me problems, and because i didn't have the source code at hand; I decided to rewrite the entire thing in C# .NET Core, and to follow the naming pattern, i named it "Glasnost" (Meaning "Openness") after the other reformation made by Mikhail Gorbachev, though the name doens't make as much sense as Perestroika.
 
-Because i wasn't really that impressed with .NET Core; i made a new project called Glastroka is a portmanteau of Perestroika and Glasnost... Clever right?
+Because i wasn't really that impressed with .NET Core; i made a new project called Glastrioka which is a portmanteau of Perestroika and Glasnost... Clever right?
