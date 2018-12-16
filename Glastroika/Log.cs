@@ -8,44 +8,45 @@ namespace Glastroika
 {
     public static class Log
     {
-        private static FileStream fs;
-
         public static void WriteLine(string Text, LogType logType = LogType.Info)
         {
-            if (fs == null)
-            { 
-                string LogFolder = Directory.CreateDirectory(Settings.CurrentSettings.LogFolder).FullName;
+            string LogFolder = Directory.CreateDirectory(Settings.CurrentSettings.LogFolder).FullName;
 
-                fs = new FileStream(Path.Combine(LogFolder, Path.GetFileName(Settings.CurrentSettings.LogFileName)), FileMode.Append, FileAccess.Write);
-            }
-
-            string _type = string.Empty;
-
-            // Yes, i know i can just use .ToString() on the enum, but what is the fun in that?
-            switch (logType)
+            using (FileStream fs = new FileStream(Path.Combine(LogFolder, Path.GetFileName(Settings.CurrentSettings.LogFileName)), FileMode.Append, FileAccess.Write))
             {
-                default:
-                case LogType.Info: _type = "INFO"; break;
-                case LogType.Warning: _type = "WARNING"; break;
-                case LogType.Error: _type = "ERROR"; break;
-                case LogType.Raw: /* BLANK */ break;
-            }
+                string _type = string.Empty;
 
-            string LogText = string.Empty;
+                // Yes, i know i can just use .ToString() on the enum, but what is the fun in that?
+                switch (logType)
+                {
+                    default:
+                    case LogType.Info: _type = "INFO"; break;
+                    case LogType.Warning: _type = "WARNING"; break;
+                    case LogType.Error: _type = "ERROR"; break;
+                    case LogType.Raw: /* BLANK */ break;
+                }
 
-            if (logType != LogType.Raw)
-            {
-                LogText = string.Format("[{0}][{1}] {2}", DateTime.Now.ToString(), _type, Text);
-            }
-            else
-            {
-                LogText = Text;
-            }
+                string LogText = string.Empty;
 
-            Debug.WriteLine(LogText);
-            StreamWriter streamWriter = new StreamWriter((Stream)fs);
-            streamWriter.WriteLine(LogText);
-            streamWriter.Close();
+                if (logType != LogType.Raw)
+                {
+                    LogText = string.Format("[{0}][{1}] {2}", DateTime.Now.ToString(), _type, Text);
+                }
+                else
+                {
+                    LogText = Text;
+                }
+
+                Debug.WriteLine(LogText);
+
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.WriteLine(LogText);
+                    sw.Close();
+                }
+
+                fs.Close();
+            }   
         }
 
         public static void Echo(string Text)
@@ -57,15 +58,6 @@ namespace Glastroika
             streamWriter.WriteLine(Text);
             streamWriter.Close();
             fileStream.Close();
-        }
-
-        public static void Dispose()
-        {
-            if (fs == null) return;
-
-            fs.Close();
-            fs.Dispose();
-            fs = null;
         }
     }
 

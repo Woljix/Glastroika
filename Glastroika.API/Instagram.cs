@@ -13,106 +13,121 @@ namespace Glastroika.API
     {
         public static User GetUser(string Username)
         {
-            User user = new User();
+            try
+            {
+                User user = new User();
 
-            string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username)) ?? null;
+                string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username)) ?? null;
 
-            if (string.IsNullOrEmpty(json))
+                if (string.IsNullOrEmpty(json))
+                    return null;
+
+                JObject ig = JObject.Parse(json);
+
+                user.Username = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"];
+
+                // user.ProfilePicture = GetProfilePicture((string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]);
+                user.ProfilePicture = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
+                user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
+                user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
+
+                JArray nodes = (JArray)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"];
+
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    Media media = new Media();
+
+                    media.Type = (string)nodes[i]["node"]["__typename"];
+
+                    JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
+
+                    if (caption.Count != 0)
+                        media.Caption = (string)caption[0]["node"]["text"];
+                    else
+                        media.Caption = string.Empty;
+
+                    media.Shortcode = (string)nodes[i]["node"]["shortcode"];
+                    media.Timestamp = (int)nodes[i]["node"]["taken_at_timestamp"];
+
+                    switch ((string)nodes[i]["node"]["__typename"])
+                    {
+                        default:
+                        case "GraphImage":
+                            media.URLs.Add((string)nodes[i]["node"]["display_url"]);
+                            break;
+
+                        case "GraphVideo":
+                        case "GraphSidecar":
+                            media.URLs.AddRange(GetMedia(media.Shortcode).URLs);
+                            break;
+                    }
+
+                    user.Media.Add(media);
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                // Don't to anything for now
                 return null;
+            }
+        }
 
-            JObject ig = JObject.Parse(json);
-
-            user.Username = (string) ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"];
-
-            // user.ProfilePicture = GetProfilePicture((string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]);
-            user.ProfilePicture = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
-            user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
-            user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
-
-            JArray nodes = (JArray)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"];
-
-            for (int i = 0; i < nodes.Count; i++)
+        public static Media GetMedia(string Shortcode)
+        {
+            try
             {
                 Media media = new Media();
 
-                media.Type = (string)nodes[i]["node"]["__typename"];
+                string json = GetJsonFromIG(string.Format("https://www.instagram.com/p/{0}/", Shortcode));
 
-                JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
+                if (string.IsNullOrEmpty(json))
+                    return null;
+
+                JObject ig = JObject.Parse(json);
+
+                media.Shortcode = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["shortcode"];
+                media.Timestamp = (int)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["taken_at_timestamp"];
+
+                media.Type = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"];
+
+                JArray caption = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_caption"]["edges"];
 
                 if (caption.Count != 0)
                     media.Caption = (string)caption[0]["node"]["text"];
                 else
                     media.Caption = string.Empty;
 
-                media.Shortcode = (string)nodes[i]["node"]["shortcode"];
-                media.Timestamp = (int) nodes[i]["node"]["taken_at_timestamp"];
-
-                switch ((string)nodes[i]["node"]["__typename"])
+                switch ((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"])
                 {
                     default:
                     case "GraphImage":
-                        media.URLs.Add((string)nodes[i]["node"]["display_url"]);
+                        media.URLs.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["display_url"]);
                         break;
 
                     case "GraphVideo":
+                        media.URLs.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["video_url"]);
+
+                        break;
+
                     case "GraphSidecar":
-                        media.URLs.AddRange(GetMedia(media.Shortcode).URLs);
+                        JArray nodes = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_sidecar_to_children"]["edges"];
+
+                        for (int i = 0; i < nodes.Count; i++)
+                        {
+                            media.URLs.Add((string)nodes[i]["node"]["display_url"]);
+                        }
+
                         break;
                 }
 
-                user.Media.Add(media);
+                return media;
             }
-
-            return user;
-        }
-
-        public static Media GetMedia(string Shortcode)
-        {
-            Media media = new Media();
-
-            string json = GetJsonFromIG(string.Format("https://www.instagram.com/p/{0}/", Shortcode));
-
-            if (string.IsNullOrEmpty(json))
-                return null;
-
-            JObject ig = JObject.Parse(json);
-
-            media.Shortcode = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["shortcode"];
-            media.Timestamp = (int)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["taken_at_timestamp"];
-
-            media.Type = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"];
-
-            JArray caption = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_caption"]["edges"];
-
-            if (caption.Count != 0)
-                media.Caption = (string)caption[0]["node"]["text"];
-            else
-                media.Caption = string.Empty;
-
-            switch ((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"])
+            catch (Exception ex)
             {
-                default:
-                case "GraphImage":
-                    media.URLs.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["display_url"]);
-                    break;
-
-                case "GraphVideo":
-                    media.URLs.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["video_url"]);
-
-                    break;
-
-                case "GraphSidecar":
-                    JArray nodes =  (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_sidecar_to_children"]["edges"];
-
-                    for (int i = 0; i < nodes.Count; i++)
-                    {
-                        media.URLs.Add((string)nodes[i]["node"]["display_url"]);
-                    }
-
-                    break;
-            }
-
-            return media;
+                return null;
+            }           
         }
 
         [Obsolete("Instagram depreciated the API")]

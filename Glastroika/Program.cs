@@ -15,6 +15,7 @@ namespace Glastroika
         static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.json");
 
         static Thread bot_thread;
+        static Thread heartbeat;
 
         static bool ShouldRun = true;
 
@@ -34,8 +35,7 @@ namespace Glastroika
 
             Console.CancelKeyPress += delegate
             {
-                ShouldRun = false;
-                Log.Dispose();               
+                ShouldRun = false;              
             };
 
             Console.Title = "Glastroika Alpha";
@@ -93,8 +93,6 @@ namespace Glastroika
                     Thread.Sleep(5000);
                 }
             }).Start();
-
-            Console.WriteLine();
         }
 
         public static void StartBots()
@@ -116,8 +114,6 @@ namespace Glastroika
             Settings.Save(SettingsFile);
 
             #endregion
-
-            Log.Dispose(); // Restart Log's FileStream
 
             Echo("Glastroika Started!", null);
 
@@ -186,7 +182,39 @@ namespace Glastroika
                 }             
             });
 
-            bot_thread.Start();   
+            bot_thread.Start();
+
+            // Used to write to a file every minute to monitor if the program is still running.
+            heartbeat = new Thread(() =>
+            {
+                while (heartbeat.ThreadState == System.Threading.ThreadState.Running)
+                {
+                    try
+                    {
+                        using (FileStream fs = new FileStream(Path.Combine(Settings.CurrentSettings.LogFolder, "heartbeat.txt"), FileMode.OpenOrCreate, FileAccess.Write))
+                        {
+                            fs.SetLength(0);
+
+                            using (StreamWriter sw = new StreamWriter(fs))
+                            {
+                                sw.WriteLine(DateTime.Now.ToString());
+
+                                sw.Close();
+                            }
+                                
+                            fs.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteLine("Heartbeat: " + ex.ToString(), LogType.Error);
+                    }
+
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
+                }
+            });
+
+            heartbeat.Start();
         }
 
         public static void Echo(string Text, User user)
