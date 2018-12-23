@@ -1,5 +1,4 @@
 ﻿using Glastroika.API;
-using Grapevine.Server;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -40,27 +39,6 @@ namespace Glastroika
 
             Console.Title = "Glastroika Alpha";
             Console.CursorVisible = false;
-
-            #region Rest Server
-
-            ServerSettings ss = new ServerSettings();
-
-            RestServer server = new RestServer(ss);
-
-            new Thread(() =>
-            {
-                server.Start();
-                while (true)
-                {
-                    Thread.Sleep(1);
-                }
-
-                // Yeah, i know that this code is unreachable, i will fix that later.
-                server.Stop();
-
-            });
-
-            #endregion
 
             if (!File.Exists(SettingsFile))
             {
