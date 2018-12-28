@@ -13,18 +13,18 @@ Because i wasn't really that impressed with .NET Core; i made a new project call
 
 ## Usage
 ```csharp
-            // Request User data from Instagram
-            User user = Instagram.GetUser("arianagrande");
+// Request User data from Instagram
+User user = Instagram.GetUser("arianagrande");
 
-            Console.WriteLine(user.FullName);
-            Console.WriteLine(user.Biography);
+Console.WriteLine(user.FullName);
+Console.WriteLine(user.Biography);
 
-            // Enumerate through the users content and display their URL.
-            foreach(Media media in user.Media)
-            {
-                foreach (string url in media.URL)
-                {
-                    Console.WriteLine(url);
-                }
-            }
+// Enumerate through the users content and display their URL.
+foreach(Media media in user.Media)
+{
+   foreach (string url in media.URL)
+   {
+      Console.WriteLine(url);
+   }
+}
 ```
