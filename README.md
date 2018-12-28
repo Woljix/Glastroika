@@ -12,6 +12,7 @@ When Perestroika gave me problems, and because i didn't have the source code at 
 Because i wasn't really that impressed with .NET Core; i made a new project called Glastrioka which is a portmanteau of Perestroika and Glasnost... Clever right?
 
 ## Usage
+### Get User Data
 ```csharp
 // Request User data from Instagram
 User user = Instagram.GetUser("arianagrande");
@@ -22,9 +23,23 @@ Console.WriteLine(user.Biography);
 // Enumerate through the users content and display their URL.
 foreach(Media media in user.Media)
 {
-   foreach (string url in media.URL)
-   {
-      Console.WriteLine(url);
-   }
+     foreach (string url in media.URL)
+     {
+          Console.WriteLine(url);
+     }
+}
+```
+### Get Media Data
+```csharp
+// Request Media data from Instagram
+Media media = Instagram.GetMedia("BryOCFOA20l");
+
+Console.WriteLine(media.Caption);
+Console.WriteLine(media.Type.ToString());
+Console.WriteLine(media.Timestamp);
+
+foreach(string url in media.URL)
+{
+     Console.WriteLine(url);
 }
 ```
