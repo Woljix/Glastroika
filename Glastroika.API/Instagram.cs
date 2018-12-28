@@ -37,7 +37,15 @@ namespace Glastroika.API
                 {
                     Media media = new Media();
 
-                    media.Type = (string)nodes[i]["node"]["__typename"];
+                    string _type = (string)nodes[i]["node"]["__typename"];
+
+                    switch (_type)
+                    {
+                        default:
+                        case "GraphImage": media.Type = MediaType.Image; break;
+                        case "GraphVideo": media.Type = MediaType.Video; break;
+                        case "GraphSidecar": media.Type = MediaType.Collage; break;
+                    }
 
                     JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
 
@@ -53,12 +61,12 @@ namespace Glastroika.API
                     {
                         default:
                         case "GraphImage":
-                            media.URLs.Add((string)nodes[i]["node"]["display_url"]);
+                            media.URL.Add((string)nodes[i]["node"]["display_url"]);
                             break;
 
                         case "GraphVideo":
                         case "GraphSidecar":
-                            media.URLs.AddRange(GetMedia(media.Shortcode).URLs);
+                            media.URL.AddRange(GetMedia(media.Shortcode).URL);
                             break;
                     }
 
@@ -90,7 +98,15 @@ namespace Glastroika.API
                 media.Shortcode = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["shortcode"];
                 media.Timestamp = (int)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["taken_at_timestamp"];
 
-                media.Type = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"];
+                string _type = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"];
+
+                switch (_type)
+                {
+                    default:
+                    case "GraphImage": media.Type = MediaType.Image; break;
+                    case "GraphVideo": media.Type = MediaType.Video; break;
+                    case "GraphSidecar": media.Type = MediaType.Collage; break;
+                }
 
                 JArray caption = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_caption"]["edges"];
 
@@ -103,11 +119,11 @@ namespace Glastroika.API
                 {
                     default:
                     case "GraphImage":
-                        media.URLs.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["display_url"]);
+                        media.URL.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["display_url"]);
                         break;
 
                     case "GraphVideo":
-                        media.URLs.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["video_url"]);
+                        media.URL.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["video_url"]);
 
                         break;
 
@@ -116,7 +132,7 @@ namespace Glastroika.API
 
                         for (int i = 0; i < nodes.Count; i++)
                         {
-                            media.URLs.Add((string)nodes[i]["node"]["display_url"]);
+                            media.URL.Add((string)nodes[i]["node"]["display_url"]);
                         }
 
                         break;

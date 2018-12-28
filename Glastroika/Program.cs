@@ -133,7 +133,7 @@ namespace Glastroika
                                 {
                                     if (media != null)
                                     {
-                                        foreach (string url in media.URLs)
+                                        foreach (string url in media.URL)
                                         {
                                             string fileName = GetFileNameFromUrl(url);
 
