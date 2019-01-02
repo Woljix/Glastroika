@@ -40,12 +40,14 @@ namespace Glastroika
             Console.Title = "Glastroika Alpha";
             Console.CursorVisible = false;
 
+            string temp_name = "@put_name_here";
+
             if (!File.Exists(SettingsFile))
             {
                 // Create template.
                 Settings.CurrentSettings = new Settings()
                 {
-                    Target = new List<string>(new string[] { "put_name_here" }),
+                    Target = new List<string>(new string[] { temp_name }),
                 };
 
                 Settings.Save(SettingsFile);
@@ -80,6 +82,15 @@ namespace Glastroika
             if (File.Exists(SettingsFile))
             {
                 Settings.Load(SettingsFile);
+
+                if (Settings.CurrentSettings.Target.Contains("@put_name_here"))
+                {
+                    Console.WriteLine("Template name detected!");
+                    Console.WriteLine("Please edit the settings file before restarting!");
+                    Console.WriteLine("Please ENTER to exit!");
+                    Console.ReadLine();
+                    Environment.Exit(0);
+                }
             }
             else
             {

@@ -18,9 +18,8 @@ namespace Glastroika.API
                 User user = new User();
 
                 string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username)) ?? null;
-
-                if (string.IsNullOrEmpty(json))
-                    return null;
+               
+                if (string.IsNullOrEmpty(json)) return null;
 
                 JObject ig = JObject.Parse(json);
 

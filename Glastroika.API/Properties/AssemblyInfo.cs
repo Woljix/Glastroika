@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Woljix Software")]
 [assembly: AssemblyProduct("Glastroika.API")]
-[assembly: AssemblyCopyright("Copyright © Woljix Software 2018")]
+[assembly: AssemblyCopyright("Copyright © Woljix Software 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

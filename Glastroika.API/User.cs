@@ -15,9 +15,6 @@ namespace Glastroika.API
 
         public List<Media> Media { get; internal set; } = new List<Media>();
 
-        internal User()
-        {
-            
-        }
+        internal User() { }
     }
 }
