@@ -1,7 +1,7 @@
 # Glastroika
 
 ## Purpose
-Glastroika is an unoffical Instagram API made in C# .NET with a seperate API and an example bot.
+Glastroika is an unoffical Instagram API made in C# .NET with an example bot.
 
 ## Name Explaination
 Back in the day i made an Instagram downloader with a generic name, but then Instagram changed the entire API, so suddently the program didn't work at all, so i just gave up.
