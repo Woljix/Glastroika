@@ -6,6 +6,8 @@ namespace Glastroika.API
 {
     public class Media
     {
+        public string Username { get; internal set; }
+
         public string Shortcode { get; internal set; }
         public MediaType Type { get; internal set; }
         public string Caption { get; internal set; }

@@ -20,5 +20,15 @@ namespace Glastroika.API
             JObject ig = JObject.Parse(Instagram.GetJsonFromIG(string.Format("https://www.instagram.com/p/{0}/", Shortcode)));
             File.WriteAllText(FileLocation, JsonConvert.SerializeObject(ig, Formatting.Indented));
         }
+
+        public static string SerializedGetUser(string Username)
+        {
+            return JsonConvert.SerializeObject(Instagram.GetUser(Username), Formatting.Indented);
+        }
+
+        public static string SerializedGetMedia(string Shortcode)
+        {
+            return JsonConvert.SerializeObject(Instagram.GetMedia(Shortcode), Formatting.Indented);
+        }
     }
 }

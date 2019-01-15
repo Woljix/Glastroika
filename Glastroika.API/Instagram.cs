@@ -30,48 +30,59 @@ namespace Glastroika.API
                 user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
                 user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
 
+                user.Followers = (int)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_followed_by"]["count"];
+                user.Following = (int)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_follow"]["count"];
+
+                user.IsPrivate = (bool)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_private"];
+                user.IsVerified = (bool)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_verified"];
+
                 JArray nodes = (JArray)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"];
 
-                for (int i = 0; i < nodes.Count; i++)
+                if (!user.IsPrivate) // Obviously you can't get media from an account if it is private.
                 {
-                    Media media = new Media();
-
-                    string _type = (string)nodes[i]["node"]["__typename"];
-
-                    switch (_type)
+                    for (int i = 0; i < nodes.Count; i++)
                     {
-                        default:
-                        case "GraphImage": media.Type = MediaType.Image; break;
-                        case "GraphVideo": media.Type = MediaType.Video; break;
-                        case "GraphSidecar": media.Type = MediaType.Collage; break;
+                        Media media = new Media();
+
+                        media.Username = (string)nodes[i]["node"]["owner"]["username"];
+
+                        string _type = (string)nodes[i]["node"]["__typename"];
+
+                        switch (_type)
+                        {
+                            default:
+                            case "GraphImage": media.Type = MediaType.Image; break;
+                            case "GraphVideo": media.Type = MediaType.Video; break;
+                            case "GraphSidecar": media.Type = MediaType.Collage; break;
+                        }
+
+                        JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
+
+                        if (caption.Count != 0)
+                            media.Caption = (string)caption[0]["node"]["text"];
+                        else
+                            media.Caption = string.Empty;
+
+                        media.Shortcode = (string)nodes[i]["node"]["shortcode"];
+                        media.Timestamp = (int)nodes[i]["node"]["taken_at_timestamp"];
+
+                        switch ((string)nodes[i]["node"]["__typename"])
+                        {
+                            default:
+                            case "GraphImage":
+                                media.URL.Add((string)nodes[i]["node"]["display_url"]);
+                                break;
+
+                            case "GraphVideo":
+                            case "GraphSidecar":
+                                media.URL.AddRange(GetMedia(media.Shortcode).URL);
+                                break;
+                        }
+
+                        user.Media.Add(media);
                     }
-
-                    JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
-
-                    if (caption.Count != 0)
-                        media.Caption = (string)caption[0]["node"]["text"];
-                    else
-                        media.Caption = string.Empty;
-
-                    media.Shortcode = (string)nodes[i]["node"]["shortcode"];
-                    media.Timestamp = (int)nodes[i]["node"]["taken_at_timestamp"];
-
-                    switch ((string)nodes[i]["node"]["__typename"])
-                    {
-                        default:
-                        case "GraphImage":
-                            media.URL.Add((string)nodes[i]["node"]["display_url"]);
-                            break;
-
-                        case "GraphVideo":
-                        case "GraphSidecar":
-                            media.URL.AddRange(GetMedia(media.Shortcode).URL);
-                            break;
-                    }
-
-                    user.Media.Add(media);
                 }
-
+                
                 return user;
             }
             catch (Exception ex)
@@ -93,6 +104,8 @@ namespace Glastroika.API
                     return null;
 
                 JObject ig = JObject.Parse(json);
+
+                media.Username = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["owner"]["username"];
 
                 media.Shortcode = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["shortcode"];
                 media.Timestamp = (int)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["taken_at_timestamp"];
