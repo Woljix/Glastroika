@@ -30,6 +30,13 @@ foreach(Media media in user.Media)
 }
 ```
 ### Get Media Data
+GetMedia can currently get:
+- The media ID
+- The type
+- The Caption
+- The timestamp
+- The URLs of the media
+
 ```csharp
 // Request Media data from Instagram
 Media media = Instagram.GetMedia("BryOCFOA20l");
