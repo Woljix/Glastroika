@@ -11,6 +11,12 @@ namespace Glastroika.API
 {
     public static class Instagram
     {
+        /// <summary>
+        /// Gets most of the crucial data of a public Instagram account.
+        /// </summary>
+        /// <param name="Username">Username of the account that you want to get the date of.</param>
+        //// <param name="SlimMode">Disabling SlimMode makes the program go through every single media to get it's information, which uses alot more time and bandwidth</param> // TODO
+        /// <returns></returns>
         public static User GetUser(string Username)
         {
             try
@@ -65,6 +71,9 @@ namespace Glastroika.API
 
                         media.Shortcode = (string)nodes[i]["node"]["shortcode"];
                         media.Timestamp = (int)nodes[i]["node"]["taken_at_timestamp"];
+                        media.Likes = (int)nodes[i]["node"]["edge_liked_by"]["count"];
+
+                        media.Comments = null; // GetUser can't get the comments because that information isn't exposed on the main page. GetMedia can get tha information though.
 
                         switch ((string)nodes[i]["node"]["__typename"])
                         {
@@ -92,6 +101,11 @@ namespace Glastroika.API
             }
         }
 
+        /// <summary>
+        /// Gets the most crucial data of a single (public) Instagram post.
+        /// </summary>
+        /// <param name="Shortcode">The 11 digit number that Instagram uses to differentiate their users posts.</param>
+        /// <returns></returns>
         public static Media GetMedia(string Shortcode)
         {
             try
@@ -109,6 +123,7 @@ namespace Glastroika.API
 
                 media.Shortcode = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["shortcode"];
                 media.Timestamp = (int)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["taken_at_timestamp"];
+                media.Likes = (int)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_preview_like"]["count"];
 
                 string _type = (string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["__typename"];
 
@@ -150,9 +165,25 @@ namespace Glastroika.API
                         break;
                 }
 
+                JArray comments = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_comment"]["edges"];
+
+                for (int i = 0; i < comments.Count; i++)
+                {
+                    media.Comments.Add(new Comment()
+                    {
+                        Owner = (string)comments[i]["node"]["owner"]["username"],
+                        ProfilePicture = (string)comments[i]["node"]["owner"]["profile_pic_url"],
+
+                        Text = (string)comments[i]["node"]["text"],
+                        Timestamp = (int)comments[i]["node"]["created_at"],
+
+                        Likes = (int)comments[i]["node"]["edge_liked_by"]["count"]
+                    });
+                }
+
                 return media;
             }
-            catch (Exception ex)
+            catch (Exception ex) // An error should probably be caught here... oh well.
             {
                 return null;
             }           
