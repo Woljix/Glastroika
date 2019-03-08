@@ -32,10 +32,12 @@ foreach(Media media in user.Media)
 ### Get Media Data
 GetMedia can currently get:
 - The media ID
-- The type
-- The Caption
-- The timestamp
+- The type (Image, Video, Collage)
+- The caption
+- The timestamp (In Unix time)
 - The URLs of the media
+- Likes
+- Comments
 
 ```csharp
 // Request Media data from Instagram
