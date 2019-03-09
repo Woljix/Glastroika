@@ -1,0 +1,5 @@
+﻿09/03/2019
+-Probably replace Threads with Tasks.
++Create a Settings generator to make the program more user friendly.
++Clean up code.
++Fixe the "problem" where if the Settings class has been edited, the bot will start to run twice because it start the bot with the previous settings and then detect the new class setup which makes the file content different thus making the hash different and that restarts the bot again. TLDR: It makes the bot do a double take.

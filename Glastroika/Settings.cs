@@ -26,6 +26,7 @@ namespace Glastroika
         public string LogFolder = "Logs";
         public string LogFileName = "Log.txt";
         public double Interval = 2.5; // Minutes
+        public bool Heartbeat = false;
         public List<string> Target = new List<string>();
     }
 }

@@ -6,12 +6,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Glastroika
 {
     public class Program
     {
         static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.json");
+        static readonly string temp_name = "$put_name_here"; // The reason is has a character in the front is because "put_name_here" could be an actual username.
 
         static Thread bot_thread;
         static Thread heartbeat;
@@ -39,8 +41,6 @@ namespace Glastroika
 
             Console.Title = "Glastroika Alpha";
             Console.CursorVisible = false;
-
-            string temp_name = "@put_name_here";
 
             if (!File.Exists(SettingsFile))
             {
@@ -203,7 +203,8 @@ namespace Glastroika
                 }
             });
 
-            heartbeat.Start();
+            if (Settings.CurrentSettings.Heartbeat)
+                heartbeat.Start();
         }
 
         public static void Echo(string Text, User user)
