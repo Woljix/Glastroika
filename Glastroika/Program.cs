@@ -174,35 +174,39 @@ namespace Glastroika
             bot_thread.Start();
 
             // Used to write to a file every minute to monitor if the program is still running.
-            heartbeat = new Thread(() =>
+
+            if (heartbeat == null)
             {
-                while (heartbeat.ThreadState == System.Threading.ThreadState.Running)
+                heartbeat = new Thread(() =>
                 {
-                    try
+                    while (heartbeat.ThreadState == System.Threading.ThreadState.Running)
                     {
-                        using (FileStream fs = new FileStream(Path.Combine(Settings.CurrentSettings.LogFolder, "heartbeat.txt"), FileMode.OpenOrCreate, FileAccess.Write))
+                        try
                         {
-                            fs.SetLength(0);
-
-                            using (StreamWriter sw = new StreamWriter(fs))
+                            using (FileStream fs = new FileStream(Path.Combine(Settings.CurrentSettings.LogFolder, "heartbeat.txt"), FileMode.OpenOrCreate, FileAccess.Write))
                             {
-                                sw.WriteLine(DateTime.Now.ToString());
+                                fs.SetLength(0);
 
-                                sw.Close();
+                                using (StreamWriter sw = new StreamWriter(fs))
+                                {
+                                    sw.WriteLine(DateTime.Now.ToString());
+
+                                    sw.Close();
+                                }
+
+                                fs.Close();
                             }
-                                
-                            fs.Close();
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.WriteLine("Heartbeat: " + ex.ToString(), LogType.Error);
-                    }
+                        catch (Exception ex)
+                        {
+                            Log.WriteLine("Heartbeat: " + ex.ToString(), LogType.Error);
+                        }
 
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
-                }
-            });
-
+                        Thread.Sleep(TimeSpan.FromMinutes(1));
+                    }
+                });
+            }
+            
             if (Settings.CurrentSettings.Heartbeat)
                 heartbeat.Start();
         }
