@@ -189,6 +189,59 @@ namespace Glastroika.API
             }           
         }
 
+        /// <summary>
+        /// Searches Instagram for a specific hashtag and then returns what it can find.
+        /// </summary>
+        /// <param name="Hashtag">The hashtag that you want to search for.</param>
+        /// <returns></returns>
+        public static Hashtag SearchHashtag(string Hashtag) // Without the actual Hashtag, ex: minecraftmemes
+        {
+            Hashtag _hashtag = new Hashtag();
+
+            string json = GetJsonFromIG(string.Format("https://www.instagram.com/explore/tags/{0}/", Hashtag)) ?? null;
+
+            if (string.IsNullOrEmpty(json)) return null;
+
+            JToken ht = JObject.Parse(json)["entry_data"]["TagPage"][0]["graphql"]["hashtag"];
+
+            _hashtag.Name = (string)ht["name"];
+
+            _hashtag.PostAmount = (int)ht["edge_hashtag_to_media"]["count"];
+
+            JArray edges = (JArray)ht["edge_hashtag_to_media"]["edges"];
+
+            for (int i = 0; i < edges.Count; i++)
+            {
+                PostMedia media = new PostMedia();
+
+                media.OwnerID = (string)edges[i]["node"]["owner"]["id"];
+
+                media.Shortcode = (string)edges[i]["node"]["shortcode"];
+
+                switch ((string)edges[i]["node"]["__typename"])
+                {
+                    default:
+                    case "GraphImage": media.Type = MediaType.Image; break;
+                    case "GraphVideo": media.Type = MediaType.Video; break;
+                    case "GraphSidecar": media.Type = MediaType.Collage; break;
+                }
+
+                JArray caption = (JArray)edges[i]["node"]["edge_media_to_caption"]["edges"];
+
+                if (caption.Count != 0)
+                    media.Caption = (string)caption[0]["node"]["text"];
+                else
+                    media.Caption = string.Empty;
+
+                media.Likes = (int)edges[i]["node"]["edge_liked_by"]["count"];
+                media.ThumbnailUrl = (string)edges[i]["node"]["thumbnail_src"];
+
+                _hashtag.Posts.Add(media);
+            }
+
+            return _hashtag;
+        }
+
         [Obsolete("Instagram depreciated the API")]
         public static string GetProfilePicture(string UserID)
         {

@@ -83,7 +83,7 @@ namespace Glastroika
             {
                 Settings.Load(SettingsFile);
 
-                if (Settings.CurrentSettings.Target.Contains("@put_name_here"))
+                if (Settings.CurrentSettings.Target.Contains(temp_name))
                 {
                     Console.WriteLine("Template name detected!");
                     Console.WriteLine("Please edit the settings file before restarting!");
@@ -94,7 +94,7 @@ namespace Glastroika
             }
             else
             {
-                // This should not be displayed ever.
+                // This should not be displayed ever. Because it should be created right beforet this function executes.
                 Console.WriteLine("Settings file not found!");
                 Console.ReadLine();
                 Environment.Exit(0);

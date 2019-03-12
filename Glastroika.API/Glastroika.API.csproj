@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hashtag.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Instagram.cs" />
     <Compile Include="Media.cs" />
