@@ -31,8 +31,8 @@ namespace Glastroika.API
 
                 user.Username = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"];
 
-                // user.ProfilePicture = GetProfilePicture((string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]);
-                user.ProfilePicture = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
+                 user.ProfilePicture = GetProfilePicture((string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
+                //user.ProfilePicture = ;
                 user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
                 user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
 
@@ -155,11 +155,22 @@ namespace Glastroika.API
                         break;
 
                     case "GraphSidecar":
+                        // This will be subject to change.
                         JArray nodes = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_sidecar_to_children"]["edges"];
 
                         for (int i = 0; i < nodes.Count; i++)
                         {
-                            media.URL.Add((string)nodes[i]["node"]["display_url"]);
+                            switch ((string)nodes[i]["node"]["__typename"])
+                            {
+                                default:
+                                case "GraphImage":
+                                    media.URL.Add((string)nodes[i]["node"]["display_url"]);
+                                    break;
+
+                                case "GraphVideo":
+                                    media.URL.Add((string)nodes[i]["node"]["video_url"]);
+                                    break;
+                            } 
                         }
 
                         break;
@@ -205,7 +216,6 @@ namespace Glastroika.API
             JToken ht = JObject.Parse(json)["entry_data"]["TagPage"][0]["graphql"]["hashtag"];
 
             _hashtag.Name = (string)ht["name"];
-
             _hashtag.PostAmount = (int)ht["edge_hashtag_to_media"]["count"];
 
             JArray edges = (JArray)ht["edge_hashtag_to_media"]["edges"];
@@ -215,7 +225,6 @@ namespace Glastroika.API
                 PostMedia media = new PostMedia();
 
                 media.OwnerID = (string)edges[i]["node"]["owner"]["id"];
-
                 media.Shortcode = (string)edges[i]["node"]["shortcode"];
 
                 switch ((string)edges[i]["node"]["__typename"])
@@ -242,7 +251,8 @@ namespace Glastroika.API
             return _hashtag;
         }
 
-        [Obsolete("Instagram depreciated the API")]
+        //[Obsolete("Instagram depreciated the API")]
+        // It now works again it seems
         public static string GetProfilePicture(string UserID)
         {
             string json = string.Empty;

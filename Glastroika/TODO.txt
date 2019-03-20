@@ -3,3 +3,9 @@
 +Create a Settings generator to make the program more user friendly.
 +Clean up code.
 +Fixe the "problem" where if the Settings class has been edited, the bot will start to run twice because it start the bot with the previous settings and then detect the new class setup which makes the file content different thus making the hash different and that restarts the bot again. TLDR: It makes the bot do a double take.
+
+17/03/2019
++Add an event based downloader and call the class like 'InstagramDM'.
+
+19/03/2019
++Maybe make it so that "GetMedia" return an array of Media so that the sidecar type can have all of the features that Video and Image have, for example thumbnails.
