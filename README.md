@@ -1,4 +1,4 @@
-# Glastroika
+# Project Glastroika
 
 ## Purpose
 Glastroika is an unoffical Instagram API made in C# .NET with an example bot.
