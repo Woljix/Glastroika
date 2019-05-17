@@ -213,12 +213,7 @@ namespace Glastroika
 
         public static void Echo(string Text, User user)
         {
-            string name = string.Empty;
-
-            if (user != null)
-                name = user.Username;
-            else
-                name = "NULL";
+            string name = (user == null ? "NULL" : user.Username); // If user is null, set the name as "NULL". If it is not null set it as the username
 
             string EText = string.Format("[{0}][{1}] {2}", DateTime.Now.ToString(), name, Text);
 

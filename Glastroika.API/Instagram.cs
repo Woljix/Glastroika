@@ -11,6 +11,18 @@ namespace Glastroika.API
 {
     public static class Instagram
     {
+        private static WebClient _web;
+        private static WebClient client
+        {
+            get
+            {
+                if (_web == null)
+                    _web = new WebClient();
+
+                return _web;
+            }
+        }
+
         /// <summary>
         /// Gets most of the crucial data of a public Instagram account.
         /// </summary>
@@ -96,6 +108,7 @@ namespace Glastroika.API
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.ToString());
                 // Don't to anything for now
                 return null;
             }
@@ -112,6 +125,7 @@ namespace Glastroika.API
             {
                 Media media = new Media();
 
+                // TODO: Make it try multiple times, as instagram has a tendency to not work all the time.
                 string json = GetJsonFromIG(string.Format("https://www.instagram.com/p/{0}/", Shortcode));
 
                 if (string.IsNullOrEmpty(json))
@@ -135,9 +149,9 @@ namespace Glastroika.API
                     case "GraphSidecar": media.Type = MediaType.Collage; break;
                 }
 
-                JArray caption = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_caption"]["edges"];
+                JArray caption = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_caption"]["edges"] ?? null;
 
-                if (caption.Count != 0)
+                if (caption.Count != 0 && caption != null)
                     media.Caption = (string)caption[0]["node"]["text"];
                 else
                     media.Caption = string.Empty;
@@ -151,7 +165,6 @@ namespace Glastroika.API
 
                     case "GraphVideo":
                         media.URL.Add((string)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["video_url"]);
-
                         break;
 
                     case "GraphSidecar":
@@ -176,26 +189,30 @@ namespace Glastroika.API
                         break;
                 }
 
-                JArray comments = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_comment"]["edges"];
+                //JArray comments = (JArray)ig["entry_data"]["PostPage"][0]["graphql"]["shortcode_media"]["edge_media_to_parent_comment"]["edges"] ?? null;
 
-                for (int i = 0; i < comments.Count; i++)
-                {
-                    media.Comments.Add(new Comment()
-                    {
-                        Owner = (string)comments[i]["node"]["owner"]["username"],
-                        ProfilePicture = (string)comments[i]["node"]["owner"]["profile_pic_url"],
+                //if (comments != null)
+                //{
+                //    for (int i = 0; i < comments.Count; i++)
+                //    {
+                //        media.Comments.Add(new Comment()
+                //        {
+                //            Owner = (string)comments[i]["node"]["owner"]["username"],
+                //            ProfilePicture = (string)comments[i]["node"]["owner"]["profile_pic_url"],
 
-                        Text = (string)comments[i]["node"]["text"],
-                        Timestamp = (int)comments[i]["node"]["created_at"],
+                //            Text = (string)comments[i]["node"]["text"],
+                //            Timestamp = (int)comments[i]["node"]["created_at"],
 
-                        Likes = (int)comments[i]["node"]["edge_liked_by"]["count"]
-                    });
-                }
+                //            Likes = (int)comments[i]["node"]["edge_liked_by"]["count"]
+                //        });
+                //    }
+                //}
 
                 return media;
             }
             catch (Exception ex) // An error should probably be caught here... oh well.
             {
+                Debug.WriteLine("GetMedia: " + ex.ToString());
                 return null;
             }           
         }
@@ -259,7 +276,7 @@ namespace Glastroika.API
 
             try
             {
-                json = new WebClient().DownloadString(string.Format("https://i.instagram.com/api/v1/users/{0}/info/", UserID));
+                json = client.DownloadString(string.Format("https://i.instagram.com/api/v1/users/{0}/info/", UserID));
 
                 if (!string.IsNullOrEmpty(json))
                 {
@@ -274,21 +291,23 @@ namespace Glastroika.API
 
             return null;
         }
-
-        internal static string GetJsonFromIG(string URL, bool A1 = false)
+        internal static string GetJsonFromIG(string URL)
         {
             string html = string.Empty;
             try
             {
-                html = new WebClient().DownloadString(URL);
+                html = client.DownloadString(URL);
+
             }
             catch (WebException ex)
             {
                 Debug.WriteLine(ex.Message);
                 return string.Empty;
             }
+
             if (string.IsNullOrEmpty(html))
                 return (string)null;
+
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
             return ExtractJsonObject(htmlDocument.DocumentNode.SelectSingleNode("//script[contains(text(), 'window._sharedData = ')]").InnerText);

@@ -8,6 +8,7 @@ namespace Glastroika
 {
     public static class Log
     {
+        // This is used for the software backend log
         public static void WriteLine(string Text, LogType logType = LogType.Info)
         {
             string LogFolder = Directory.CreateDirectory(Settings.CurrentSettings.LogFolder).FullName;
@@ -49,6 +50,7 @@ namespace Glastroika
             }   
         }
 
+        // This is used to mirror whatever the software displays
         public static void Echo(string Text)
         {
             string LogFolder = Directory.CreateDirectory(Settings.CurrentSettings.LogFolder).FullName;

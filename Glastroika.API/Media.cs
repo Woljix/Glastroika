@@ -19,6 +19,7 @@ namespace Glastroika.API
         public int Timestamp { get; internal set; }
 
         public List<string> URL { get; internal set; }
+        //public List<string> ThumbnailURL { get; internal set; } // Temporary solution of my thumbnail problem (The thumbnail will be on the same index as the normal URL)
 
         internal Media()
         {
