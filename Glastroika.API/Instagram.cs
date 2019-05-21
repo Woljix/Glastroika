@@ -35,7 +35,7 @@ namespace Glastroika.API
             {
                 User user = new User();
 
-                string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username)) ?? null;
+                string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username.Trim())) ?? null;
                
                 if (string.IsNullOrEmpty(json)) return null;
 
@@ -43,7 +43,7 @@ namespace Glastroika.API
 
                 user.Username = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"];
 
-                 user.ProfilePicture = GetProfilePicture((int)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
+                 user.ProfilePicture = GetProfilePicture((long)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
                 //user.ProfilePicture = ;
                 user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
                 user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
@@ -126,7 +126,7 @@ namespace Glastroika.API
                 Media media = new Media();
 
                 // TODO: Make it try multiple times, as instagram has a tendency to not work all the time.
-                string json = GetJsonFromIG(string.Format("https://www.instagram.com/p/{0}/", Shortcode));
+                string json = GetJsonFromIG(string.Format("https://www.instagram.com/p/{0}/", Shortcode.Trim()));
 
                 if (string.IsNullOrEmpty(json))
                     return null;
@@ -226,7 +226,7 @@ namespace Glastroika.API
         {
             Hashtag _hashtag = new Hashtag();
 
-            string json = GetJsonFromIG(string.Format("https://www.instagram.com/explore/tags/{0}/", Hashtag)) ?? null;
+            string json = GetJsonFromIG(string.Format("https://www.instagram.com/explore/tags/{0}/", Hashtag.Trim())) ?? null;
 
             if (string.IsNullOrEmpty(json)) return null;
 
@@ -272,7 +272,7 @@ namespace Glastroika.API
         {
             try
             {
-                string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username)) ?? null;
+                string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username.Trim())) ?? null;
 
                 if (string.IsNullOrEmpty(json)) return null;
 
@@ -313,15 +313,17 @@ namespace Glastroika.API
         }
         internal static string GetJsonFromIG(string URL)
         {
+            //Debug.WriteLine(string.Format("'{0}'", URL));
+
             string html = string.Empty;
             try
             {
                 html = client.DownloadString(URL);
-
             }
             catch (WebException ex)
             {
-                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(URL);
+                Debug.WriteLine(ex.ToString());
                 return string.Empty;
             }
 
