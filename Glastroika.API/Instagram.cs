@@ -43,7 +43,7 @@ namespace Glastroika.API
 
                 user.Username = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"];
 
-                 user.ProfilePicture = GetProfilePicture((string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
+                 user.ProfilePicture = GetProfilePicture((int)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
                 //user.ProfilePicture = ;
                 user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
                 user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
@@ -268,9 +268,29 @@ namespace Glastroika.API
             return _hashtag;
         }
 
+        public static string GetProfilePicture(string Username)
+        {
+            try
+            {
+                string json = GetJsonFromIG(string.Format("https://www.instagram.com/{0}/", Username)) ?? null;
+
+                if (string.IsNullOrEmpty(json)) return null;
+
+                JObject ig = JObject.Parse(json);
+
+                long _id = (long)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"];
+
+                return GetProfilePicture(_id);
+            }
+            catch
+            {
+                return null;
+            }            
+        }
+
         //[Obsolete("Instagram depreciated the API")]
         // It now works again it seems
-        public static string GetProfilePicture(string UserID)
+        public static string GetProfilePicture(long UserID)
         {
             string json = string.Empty;
 
