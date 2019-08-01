@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -11,8 +11,6 @@ namespace Glastroika.API
 {
     public static class Instagram
     {
-        private static readonly string query_hash = "f2405b236d85e8296cf30347c9f08c2a"; // If the software should suddently not work, this might be the issue.
-
         private static WebClient _web;
         private static WebClient client
         {
@@ -29,10 +27,10 @@ namespace Glastroika.API
         /// Gets most of the crucial data of a public Instagram account.
         /// </summary>
         /// <param name="Username">Username of the account that you want to get the date of.</param>
-        /// <param name="GetEverything">Will get everything the user has posted instead of the default first 9 ones (Will take longer to process)</param>
+        /// <param name="getEverything">Will get everything the user has posted instead of the default first 9 ones (Will take longer to process)</param>
         //// <param name="SlimMode">Disabling SlimMode makes the program go through every single media to get it's information, which uses alot more time and bandwidth</param> // TODO
         /// <returns></returns>
-        public static User GetUser(string Username, bool GetEverything = false)
+        public static User GetUser(string Username, bool getEverything = false)
         {
             try
             {
@@ -46,7 +44,7 @@ namespace Glastroika.API
 
                 user.Username = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["username"];
 
-                user.ProfilePicture = GetProfilePicture((long)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
+                 user.ProfilePicture = GetProfilePicture((long)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"]) ?? (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["profile_pic_url_hd"];
                 //user.ProfilePicture = ;
                 user.FullName = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["full_name"];
                 user.Biography = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["biography"];
@@ -57,149 +55,56 @@ namespace Glastroika.API
                 user.IsPrivate = (bool)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_private"];
                 user.IsVerified = (bool)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["is_verified"];
 
+                JArray nodes = (JArray)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"];
+
                 if (!user.IsPrivate) // Obviously you can't get media from an account if it is private.
                 {
-                    // TODO: This part can be significantly shortened.
-
-                    #region Normal API
-                    if (!GetEverything) // Use the normal API
+                    for (int i = 0; i < nodes.Count; i++)
                     {
-                        JArray nodes = (JArray)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"];
+                        Media media = new Media();
 
-                        for (int i = 0; i < nodes.Count; i++)
+                        media.Username = (string)nodes[i]["node"]["owner"]["username"];
+
+                        string _type = (string)nodes[i]["node"]["__typename"];
+
+                        switch (_type)
                         {
-                            Media media = new Media();
-
-                            media.Username = (string)nodes[i]["node"]["owner"]["username"];
-
-                            string _type = (string)nodes[i]["node"]["__typename"];
-
-                            switch (_type)
-                            {
-                                default:
-                                case "GraphImage": media.Type = MediaType.Image; break;
-                                case "GraphVideo": media.Type = MediaType.Video; break;
-                                case "GraphSidecar": media.Type = MediaType.Collage; break;
-                            }
-
-                            JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
-
-                            if (caption.Count != 0)
-                                media.Caption = (string)caption[0]["node"]["text"];
-                            else
-                                media.Caption = string.Empty;
-
-                            media.Shortcode = (string)nodes[i]["node"]["shortcode"];
-                            media.Timestamp = (int)nodes[i]["node"]["taken_at_timestamp"];
-                            media.Likes = (int)nodes[i]["node"]["edge_liked_by"]["count"];
-
-                            media.Comments = null; // GetUser can't get the comments because that information isn't exposed on the main page. GetMedia can get tha information though.
-
-                            switch ((string)nodes[i]["node"]["__typename"])
-                            {
-                                default:
-                                case "GraphImage":
-                                    media.URL.Add((string)nodes[i]["node"]["display_url"]);
-                                    break;
-
-                                case "GraphVideo":
-                                case "GraphSidecar":
-                                    media.URL.AddRange(GetMedia(media.Shortcode).URL);
-                                    break;
-                            }
-
-                            user.Media.Add(media);
+                            default:
+                            case "GraphImage": media.Type = MediaType.Image; break;
+                            case "GraphVideo": media.Type = MediaType.Video; break;
+                            case "GraphSidecar": media.Type = MediaType.Collage; break;
                         }
-                    }
-                    #endregion
-                    #region Query API
-                    else // Query api to get alot more info.
-                    {
-                        string ID = (string)ig["entry_data"]["ProfilePage"][0]["graphql"]["user"]["id"];
 
-                        string endcursor = string.Empty;
-                        bool has_next_page = true;
+                        JArray caption = (JArray)nodes[i]["node"]["edge_media_to_caption"]["edges"];
 
-                        while (has_next_page)
+                        if (caption.Count != 0)
+                            media.Caption = (string)caption[0]["node"]["text"];
+                        else
+                            media.Caption = string.Empty;
+
+                        media.Shortcode = (string)nodes[i]["node"]["shortcode"];
+                        media.Timestamp = (int)nodes[i]["node"]["taken_at_timestamp"];
+                        media.Likes = (int)nodes[i]["node"]["edge_liked_by"]["count"];
+
+                        media.Comments = null; // GetUser can't get the comments because that information isn't exposed on the main page. GetMedia can get tha information though.
+
+                        switch ((string)nodes[i]["node"]["__typename"])
                         {
-                            string _query = string.Empty;
-
-                            try
-                            {
-                                _query = client.DownloadString(GetQueryString(query_hash, ID, endcursor));
-                            }
-                            catch
-                            {
-                                Debug.WriteLine("Downloading query failed! It might be that either Instagram is down, or that there is something wrong with the query_hash.");
-                            }
-
-                            if (string.IsNullOrEmpty(_query))
-                            {
-                                // TODO: Fall back to the normal API instead.
+                            default:
+                            case "GraphImage":
+                                media.URL.Add((string)nodes[i]["node"]["display_url"]);
                                 break;
-                            }
 
-                            JObject _ql = JObject.Parse(_query);
-
-                            JArray _media = (JArray)_ql["data"]["user"]["edge_owner_to_timeline_media"]["edges"];
-
-                            for (int i = 0; i < _media.Count; i++)
-                            {
-                                Media media = new Media();
-
-                                media.Username = (string)_media[i]["node"]["owner"]["username"];
-
-                                string _type = (string)_media[i]["node"]["__typename"];
-
-                                switch (_type)
-                                {
-                                    default:
-                                    case "GraphImage": media.Type = MediaType.Image; break;
-                                    case "GraphVideo": media.Type = MediaType.Video; break;
-                                    case "GraphSidecar": media.Type = MediaType.Collage; break;
-                                }
-
-                                JArray caption = (JArray)_media[i]["node"]["edge_media_to_caption"]["edges"];
-
-                                if (caption.Count != 0)
-                                    media.Caption = (string)caption[0]["node"]["text"];
-                                else
-                                    media.Caption = string.Empty;
-
-                                media.Shortcode = (string)_media[i]["node"]["shortcode"];
-                                media.Timestamp = (int)_media[i]["node"]["taken_at_timestamp"];
-                                media.Likes = (int)_media[i]["node"]["edge_media_preview_like"]["count"];
-
-                                media.Comments = null; // GetUser can't get the comments because that information isn't exposed on the main page. GetMedia can get tha information though.
-
-                                switch ((string)_media[i]["node"]["__typename"])
-                                {
-                                    default:
-                                    case "GraphImage":
-                                        media.URL.Add((string)_media[i]["node"]["display_url"]);
-                                        break;
-
-                                    case "GraphVideo":
-                                    case "GraphSidecar":
-                                        media.URL.AddRange(GetMedia(media.Shortcode).URL);
-                                        break;
-                                }
-
-                                user.Media.Add(media);
-                            }
-
-                            has_next_page = (bool)_ql["data"]["user"]["edge_owner_to_timeline_media"]["page_info"]["has_next_page"];
-
-                            if (has_next_page)
-                            {
-                                endcursor = (string)_ql["data"]["user"]["edge_owner_to_timeline_media"]["page_info"]["end_cursor"];
-                            }
+                            case "GraphVideo":
+                            case "GraphSidecar":
+                                media.URL.AddRange(GetMedia(media.Shortcode).URL);
+                                break;
                         }
 
+                        user.Media.Add(media);
                     }
-                    #endregion
                 }
-
+                
                 return user;
             }
             catch (Exception ex)
@@ -406,15 +311,6 @@ namespace Glastroika.API
             }
 
             return null;
-        }
-
-        internal static string GetQueryString(string query_hash, string id, string end_cursor)
-        {
-            string _url = string.Empty;
-
-            Uri _uri = new Uri("https://www.instagram.com/graphql/query/?query_hash=" + query_hash + "&variables={\"id\":\"" + id + "\",\"first\":12,\"after\":\"" + end_cursor + "\"}");
-
-            return _uri.AbsoluteUri; // This gets an encoded string, which is probably better than uncoded.
         }
         internal static string GetJsonFromIG(string URL)
         {
